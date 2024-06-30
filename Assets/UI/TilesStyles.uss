@@ -1,0 +1,37 @@
+VisualElement {
+}
+
+.button {
+    padding-right: 16px;
+    padding-left: 16px;
+    margin-top: 0;
+    margin-right: 10px;
+    margin-bottom: 0;
+    margin-left: 0;
+    background-color: rgb(69, 161, 105);
+    border-top-width: 2px;
+    border-right-width: 2px;
+    border-bottom-width: 2px;
+    border-left-width: 2px;
+    border-left-color: rgba(0, 0, 0, 0.39);
+    border-right-color: rgba(0, 0, 0, 0.39);
+    border-top-color: rgba(0, 0, 0, 0.39);
+    border-bottom-color: rgba(0, 0, 0, 0.39);
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+    transition-duration: 0.2s;
+    color: rgb(255, 255, 255);
+    font-size: 16px;
+    height: 40px;
+}
+
+.button:hover {
+    background-color: rgb(55, 140, 89);
+}
+
+.button:active {
+    background-color: rgb(45, 125, 77);
+    scale: 0.8 0.8;
+}
