@@ -18,21 +18,48 @@ public class TileHandler : MonoBehaviour
     public TileBehaviour tileBehaviour;
     public UIDocument tilesDoc;
     public Tilemap tilemap;
+    public Tile emptyTile;
     public PixelPerfectCamera pixelPerfectCamera;
+
+    [Header("Options")]
+    public bool useVisualDelay = false;
+    [Condition("useVisualDelay", true)]
+    public float visualDelay = 0.3f;
     public int newPathBranchChance = 20;
-    public bool calcGridAutomatically = true;
-    [Condition("calcGridAutomatically", true, true)]
-    public int gridWidth = 10;
-    [Condition("calcGridAutomatically", true, true)]
-    public int gridHeight = 10;
+    public GenType generationMethod;
+
+    [Header("Grid")]
+    public bool useCustomGridSize = true;
+
+    [Condition("useCustomGridSize", true, true)]
+    [ReadOnly]
+    public int calculatedGridWidth = 10;
+    [Condition("useCustomGridSize", true, true)]
+    [ReadOnly]
+    public int calculatedGridHeight = 10;
+
+    [Condition("useCustomGridSize", true)]
+    public int customGridWidth = 10;
+    [Condition("useCustomGridSize", true)]
+    public int customGridHeight = 10;
 
     [Header("Debug")]
     public bool generate = false;
+    [Condition("@generationMethod==GenType.PerlinNoise", true)]
+    public bool runInUpdate = false;
 
-    private TileType[,] tilesData;
+    private TileType[,] tileData;
 
+    private int gridWidth;
+    private int gridHeight;
     private int halfGridWidth;
     private int halfGridHeight;
+
+    // References
+    private NoiseGen noiseGen;
+    private DiamondSquareGen diamondSquareGen;
+    private MidpointDisplacementGen midpointDisplacementGen;
+    private WaveFunctionCollapseGen waveFunctionCollapseGen;
 
     // UI
     private VisualElement root;
@@ -40,12 +67,18 @@ public class TileHandler : MonoBehaviour
 
     void Start()
     {
+        // Cache
+        noiseGen = GetComponent<NoiseGen>();
+        diamondSquareGen = GetComponent<DiamondSquareGen>();
+        midpointDisplacementGen = GetComponent<MidpointDisplacementGen>();
+        waveFunctionCollapseGen = GetComponent<WaveFunctionCollapseGen>();
+
         // UI
         root = tilesDoc.rootVisualElement;
         generateButton = root.Q<Button>("GenerateButton");
 
         // UI Taps
-        generateButton.clicked += () => GeneratesTiles();
+        generateButton.clicked += () => GenerateAndSetTiles();
     }
 
     void OnValidate()
@@ -56,48 +89,133 @@ public class TileHandler : MonoBehaviour
 
             Validate(() =>
             {
-                GeneratesTiles();
+                // Cache
+                noiseGen = GetComponent<NoiseGen>();
+                diamondSquareGen = GetComponent<DiamondSquareGen>();
+                midpointDisplacementGen = GetComponent<MidpointDisplacementGen>();
+                waveFunctionCollapseGen = GetComponent<WaveFunctionCollapseGen>();
+
+                GenerateAndSetTiles();
             }, this);
         }
 
-        MakeGridSizeEven();
+        if (useCustomGridSize)
+        {
+            MakeGridSizeEven();
+        }
+
+        if (generationMethod != GenType.PerlinNoise)
+        {
+            runInUpdate = false;
+        }
     }
 
-    public void GeneratesTiles()
+    void Update()
     {
-        // tilesData = new TileType[gridWidth, gridHeight];
+        if (runInUpdate)
+        {
+            GenerateAndSetTiles();
+        }
+    }
 
-        CalcGridSize();
+    public void GenerateAndSetTiles()
+    {
+        CalculatedGridSize();
 
+        // Setup tile data
+        tileData = new TileType[gridWidth, gridHeight];
+
+        // Generate tile data
+        switch (generationMethod)
+        {
+            case GenType.PerlinNoise:
+                tileData = noiseGen.Generate(gridWidth, gridHeight, useVisualDelay);
+                break;
+            case GenType.SimplexNoise:
+                tileData = noiseGen.Generate(gridWidth, gridHeight, useVisualDelay, true);
+                break;
+            case GenType.FractalNoise:
+                tileData = noiseGen.Generate(gridWidth, gridHeight, useVisualDelay, false, true);
+                break;
+            case GenType.DiamondSquare:
+                tileData = diamondSquareGen.Generate(gridWidth, gridHeight, useVisualDelay);
+                break;
+            case GenType.MidpointDisplacement:
+                tileData = waveFunctionCollapseGen.Generate(gridWidth, gridHeight, useVisualDelay);
+                break;
+            case GenType.WaveFunctionCollapse:
+                tileData = waveFunctionCollapseGen.Generate(gridWidth, gridHeight, useVisualDelay);
+                break;
+            default: // GenType.Random
+                RandomGen();
+                break;
+        }
+
+        if (tileData == null)
+        {
+            Debug.LogWarning("\'tileData\' is null! Try using a different generation method!");
+            return;
+        }
+
+        // Set tilemap data
         tilemap.ClearAllTiles();
 
         for (int x = -halfGridWidth; x < halfGridWidth; x++)
         {
             for (int y = -halfGridHeight; y < halfGridHeight; y++)
             {
-                int chosenTile = UnityEngine.Random.Range(0, Enum.GetNames(typeof(TileType)).Length);
+                Tile foundTile = GetTileFromType(tileData[x + halfGridWidth, y + halfGridHeight]);
 
-                tilemap.SetTile(new Vector3Int(x, y, 0), tileBehaviour.ruleTiles[chosenTile].tile);
+                tilemap.SetTile(new Vector3Int(x, y, 0), foundTile);
             }
         }
     }
 
-    void MakeGridSizeEven()
+    void RandomGen()
     {
-        if (gridWidth % 2 == 1)
+        for (int x = 0; x < gridWidth; x++)
         {
-            gridWidth++;
-        }
-
-        if (gridHeight % 2 == 1)
-        {
-            gridHeight++;
+            for (int y = 0; y < gridHeight; y++)
+            {
+                tileData[x, y] = (TileType)UnityEngine.Random.Range(0, Enum.GetNames(typeof(TileType)).Length);
+            }
         }
     }
 
-    void CalcGridSize()
+    Tile GetTileFromType(TileType tileType)
     {
-        if (calcGridAutomatically)
+        for (int i = 0; i < tileBehaviour.ruleTiles.Length; i++)
+        {
+            if (tileBehaviour.ruleTiles[i].tileType == tileType)
+            {
+                return tileBehaviour.ruleTiles[i].tile;
+            }
+        }
+
+        return emptyTile;
+    }
+
+    void MakeGridSizeEven()
+    {
+        if (customGridWidth % 2 == 1)
+        {
+            customGridWidth++;
+        }
+
+        if (customGridHeight % 2 == 1)
+        {
+            customGridHeight++;
+        }
+    }
+
+    void CalculatedGridSize()
+    {
+        if (useCustomGridSize)
+        {
+            gridWidth = customGridWidth;
+            gridHeight = customGridHeight;
+        }
+        else
         {
             float tempScreenWidth;
             float tempScreenHeight;
@@ -109,18 +227,31 @@ public class TileHandler : MonoBehaviour
             }
             else
             {
+                pixelPerfectCamera.runInEditMode = true;
+
                 tempScreenWidth = Handles.GetMainGameViewSize().x;
                 tempScreenHeight = Handles.GetMainGameViewSize().y;
             }
 
-            halfGridWidth = Mathf.CeilToInt(tempScreenWidth / pixelPerfectCamera.pixelRatio / pixelPerfectCamera.assetsPPU / 2);
-            halfGridHeight = Mathf.CeilToInt(tempScreenHeight / pixelPerfectCamera.pixelRatio / pixelPerfectCamera.assetsPPU / 2);
+            gridWidth = Mathf.CeilToInt(tempScreenWidth / pixelPerfectCamera.pixelRatio / pixelPerfectCamera.assetsPPU);
+            gridHeight = Mathf.CeilToInt(tempScreenHeight / pixelPerfectCamera.pixelRatio / pixelPerfectCamera.assetsPPU);
+
+            if (gridWidth % 2 == 1)
+            {
+                gridWidth++;
+            }
+
+            if (gridHeight % 2 == 1)
+            {
+                gridHeight++;
+            }
+
+            calculatedGridWidth = gridWidth;
+            calculatedGridHeight = gridHeight;
         }
-        else
-        {
-            halfGridWidth = gridWidth / 2;
-            halfGridHeight = gridHeight / 2;
-        }
+
+        halfGridWidth = gridWidth / 2;
+        halfGridHeight = gridHeight / 2;
     }
 
     void Validate(Action callback, params UnityEngine.Object[] newObjects)
@@ -189,4 +320,15 @@ public enum TileType
     Mountain,
     MountainTop,
     // Path
+}
+
+public enum GenType
+{
+    Random,
+    PerlinNoise,
+    SimplexNoise,
+    FractalNoise,
+    DiamondSquare,
+    MidpointDisplacement,
+    WaveFunctionCollapse,
 }
