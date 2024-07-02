@@ -254,6 +254,29 @@ public class TileHandler : MonoBehaviour
         halfGridHeight = gridHeight / 2;
     }
 
+    public TileType GetTileFormSample(float sample, float min, float max)
+    {
+        float diff = max - min;
+
+        float count = diff / (Enum.GetNames(typeof(TileType)).Length - 1);
+
+        int newSample = Mathf.FloorToInt(sample / count) - 1;
+
+        return (TileType)newSample;
+    }
+
+    public string FormatMilliseconds(float milliSeconds)
+    {
+      /*  int totalSeconds = milliSeconds/1000;
+        int 
+
+        string formatedString = string.Format("{0}m {1}s {2}ms");
+
+        UnityEngine.Debug.Log("Generated noise in: " + formatedString);*/
+
+        return "";
+    }
+
     void Validate(Action callback, params UnityEngine.Object[] newObjects)
     {
         void NextUpdate()
@@ -308,17 +331,17 @@ public class TileNext
 
 public enum TileType
 {
-    Grass,
-    GrassFlowers,
-    GrassBush,
+    MountainTop,
+    Mountain,
+    MountainFoot,
     GrassRock,
+    GrassBush,
+    GrassFlowers,
+    Grass,
     Desert,
     WaterShallow,
     Water,
     WaterDeep,
-    MountainFoot,
-    Mountain,
-    MountainTop,
     // Path
 }
 

@@ -24,8 +24,14 @@ public class NoiseGen : MonoBehaviour
     public float persistence = 0.5f;
     public float lacunarity = 2f;
 
+    // References
+    private TileHandler tileHandler;
+
     void Start()
     {
+        // Cache
+        tileHandler = GetComponent<TileHandler>();
+
         if (useRandomOffset)
         {
             float x = Random.Range(-9999, 9999);
@@ -42,50 +48,89 @@ public class NoiseGen : MonoBehaviour
         Stopwatch stopwatch = new Stopwatch();
 
         TileType[,] tileData = new TileType[gridWidth, gridHeight];
+        float[,] sampleData = new float[gridWidth, gridHeight];
 
         float[,] simplexSample = default;
+
+        float minSample = 0f;
+        float maxSample = 0f;
+
+        stopwatch.Start();
 
         if (useSimplexNoise)
         {
             simplexSample = Noise.Calc2D(gridWidth + (int)simplexOffset.x, gridHeight + (int)simplexOffset.y, simplexScale);
         }
 
-        stopwatch.Start();
-
+        // Set sample data
         for (int x = 0; x < gridWidth; x++)
         {
             for (int y = 0; y < gridHeight; y++)
             {
+                float sample;
+                
                 if (useSimplexNoise) // Simplex
                 {
-                    float sample = simplexSample[x, y];
-                    tileData[x, y] = GetTileFormSimplexSample(sample);
+                    sample = simplexSample[x, y];
                 }
                 else if (useFractalNoise) // Fractal
                 {
                     float xCoord = (float)x / gridWidth * fractalScale + fractalOffset.x;
                     float yCoord = (float)y / gridHeight * fractalScale + fractalOffset.y;
 
-                    float sample = FractalNoise(xCoord, yCoord);
-
-                    UnityEngine.Debug.Log(sample);
-                    tileData[x, y] = GetTileFormFractalSample(sample);
+                    sample = FractalNoise(xCoord, yCoord);
                 }
                 else // Perlin
                 {
                     float xCoord = (float)x / gridWidth * scale + offset.x;
                     float yCoord = (float)y / gridHeight * scale + offset.y;
 
-                    float sample = Mathf.PerlinNoise(xCoord, yCoord);
+                    sample = Mathf.PerlinNoise(xCoord, yCoord);
+                }
 
-                    tileData[x, y] = GetTileFormSample(sample);
+                if (x == 0 && y == 0)
+                {
+                    minSample = sample;
+                    maxSample = sample;
+                }
+
+                if (sample < minSample)
+                {
+                    minSample = sample;
+                }
+
+                if (sample > maxSample)
+                {
+                    maxSample = sample;
+                }
+
+                sampleData[x, y] = sample;
+            }
+        }
+
+        // Set tile data
+        for (int x = 0; x < gridWidth; x++)
+        {
+            for (int y = 0; y < gridHeight; y++)
+            {
+                if (useSimplexNoise) // Simplex
+                {
+                    tileData[x, y] = tileHandler.GetTileFormSample(sampleData[x, y], minSample, maxSample);
+                }
+                else if (useFractalNoise) // Fractal
+                {
+                    tileData[x, y] = tileHandler.GetTileFormSample(sampleData[x, y], minSample, maxSample);
+                }
+                else // Perlin
+                {
+                    tileData[x, y] = tileHandler.GetTileFormSample(sampleData[x, y], minSample, maxSample);
                 }
             }
         }
 
         stopwatch.Stop();
 
-        UnityEngine.Debug.Log("Generated noise in: " + stopwatch.ElapsedMilliseconds);
+        tileHandler.FormatMilliseconds(stopwatch.ElapsedMilliseconds);
 
         return tileData;
     }
@@ -111,143 +156,4 @@ public class NoiseGen : MonoBehaviour
 
         return noiseHeight;
     }
-
-    TileType GetTileFormSample(float sample)
-    {
-        if (sample < 0.1f)
-        {
-            return TileType.Grass;
-        }
-        if (sample < 0.2f)
-        {
-            return TileType.GrassFlowers;
-        }
-        if (sample < 0.3f)
-        {
-            return TileType.GrassBush;
-        }
-        if (sample < 0.4f)
-        {
-            return TileType.Desert;
-        }
-        if (sample < 0.5f)
-        {
-            return TileType.WaterShallow;
-        }
-        if (sample < 0.6f)
-        {
-            return TileType.Water;
-        }
-        if (sample < 0.7f)
-        {
-            return TileType.WaterDeep;
-        }
-        if (sample < 0.8f)
-        {
-            return TileType.MountainFoot;
-        }
-        if (sample < 0.9f)
-        {
-            return TileType.Mountain;
-        }
-        if (sample < 1f)
-        {
-            return TileType.MountainTop;
-        }
-
-        return TileType.Grass;
-    }
-
-    TileType GetTileFormSimplexSample(float sample)
-    {
-        if (sample < 22f)
-        {
-            return TileType.Grass;
-        }
-        if (sample < 50f)
-        {
-            return TileType.GrassFlowers;
-        }
-        if (sample < 77f)
-        {
-            return TileType.GrassBush;
-        }
-        if (sample < 105f)
-        {
-            return TileType.Desert;
-        }
-        if (sample < 133f)
-        {
-            return TileType.WaterShallow;
-        }
-        if (sample < 161f)
-        {
-            return TileType.Water;
-        }
-        if (sample < 188f)
-        {
-            return TileType.WaterDeep;
-        }
-        if (sample < 216f)
-        {
-            return TileType.MountainFoot;
-        }
-        if (sample < 244f)
-        {
-            return TileType.Mountain;
-        }
-        if (sample < 273f)
-        {
-            return TileType.MountainTop;
-        }
-
-        return TileType.Grass;
-    }
-
-    TileType GetTileFormFractalSample(float sample)
-    {
-        if (sample < -0.5f)
-        {
-            return TileType.Grass;
-        }
-        if (sample < -0.4f)
-        {
-            return TileType.GrassFlowers;
-        }
-        if (sample < -0.3f)
-        {
-            return TileType.GrassBush;
-        }
-        if (sample < -0.2f)
-        {
-            return TileType.Desert;
-        }
-        if (sample < -0.1f)
-        {
-            return TileType.WaterShallow;
-        }
-        if (sample < 0.1f)
-        {
-            return TileType.Water;
-        }
-        if (sample < 0.2f)
-        {
-            return TileType.WaterDeep;
-        }
-        if (sample < 0.3f)
-        {
-            return TileType.MountainFoot;
-        }
-        if (sample < 0.4f)
-        {
-            return TileType.Mountain;
-        }
-        if (sample < 0.5f)
-        {
-            return TileType.MountainTop;
-        }
-
-        return TileType.Grass;
-    }
-
 }
