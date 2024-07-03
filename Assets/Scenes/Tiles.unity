@@ -20869,6 +20869,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   useRandomOffset: 0
+  logElapsedTime: 1
   scale: 3
   offset: {x: 0, y: 0}
   simplexScale: 0.05

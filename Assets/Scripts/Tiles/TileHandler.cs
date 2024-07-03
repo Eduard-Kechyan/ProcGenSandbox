@@ -6,7 +6,6 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.Tilemaps;
 using UnityEngine.U2D;
-using System.Linq;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -45,7 +44,6 @@ public class TileHandler : MonoBehaviour
 
     [Header("Debug")]
     public bool generate = false;
-    [Condition("@generationMethod==GenType.PerlinNoise", true)]
     public bool runInUpdate = false;
 
     private TileType[,] tileData;
@@ -87,14 +85,8 @@ public class TileHandler : MonoBehaviour
         {
             generate = false;
 
-            Validate(() =>
+            Glob.Validate(() =>
             {
-                // Cache
-                noiseGen = GetComponent<NoiseGen>();
-                diamondSquareGen = GetComponent<DiamondSquareGen>();
-                midpointDisplacementGen = GetComponent<MidpointDisplacementGen>();
-                waveFunctionCollapseGen = GetComponent<WaveFunctionCollapseGen>();
-
                 GenerateAndSetTiles();
             }, this);
         }
@@ -252,56 +244,6 @@ public class TileHandler : MonoBehaviour
 
         halfGridWidth = gridWidth / 2;
         halfGridHeight = gridHeight / 2;
-    }
-
-    public TileType GetTileFormSample(float sample, float min, float max)
-    {
-        float diff = max - min;
-
-        float count = diff / (Enum.GetNames(typeof(TileType)).Length - 1);
-
-        int newSample = Mathf.FloorToInt(sample / count) - 1;
-
-        return (TileType)newSample;
-    }
-
-    public string FormatMilliseconds(float milliSeconds)
-    {
-      /*  int totalSeconds = milliSeconds/1000;
-        int 
-
-        string formatedString = string.Format("{0}m {1}s {2}ms");
-
-        UnityEngine.Debug.Log("Generated noise in: " + formatedString);*/
-
-        return "";
-    }
-
-    void Validate(Action callback, params UnityEngine.Object[] newObjects)
-    {
-        void NextUpdate()
-        {
-            EditorApplication.update -= NextUpdate;
-
-            if (newObjects.Any(c => !c))
-            {
-                return;
-            }
-
-            if (newObjects.All(c => !EditorUtility.IsDirty(c)))
-            {
-                return;
-            }
-
-            callback?.Invoke();
-
-            foreach (UnityEngine.Object component in newObjects)
-            {
-                EditorUtility.SetDirty(component);
-            }
-        }
-
-        EditorApplication.update += NextUpdate;
     }
 }
 
