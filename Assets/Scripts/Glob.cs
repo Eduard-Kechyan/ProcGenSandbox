@@ -5,7 +5,6 @@ using UnityEngine;
 using System.Linq;
 using System.Diagnostics;
 
-
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -13,17 +12,6 @@ using UnityEditor;
 public class Glob : MonoBehaviour
 {
     public static Glob Instance;
-
-    public static TileType GetTileFormSample(float sample, float min, float max)
-    {
-        float diff = max - min;
-
-        float count = diff / (Enum.GetNames(typeof(TileType)).Length - 1);
-
-        int newSample = Mathf.FloorToInt(sample / count) - 1;
-
-        return (TileType)newSample;
-    }
 
     public static string FormatMilliseconds(long milliSeconds)
     {
@@ -36,6 +24,19 @@ public class Glob : MonoBehaviour
         string formatedString = string.Format("{0}m {1}s {2}ms", minutes, seconds, remainingMilliSeconds);
 
         return "Generated tilemap in: " + formatedString;
+    }
+
+    public static TileType GetTileFromSample(float sample, float min, float max)
+    {
+        float normalizedSample = (sample - min) / (max - min);
+
+        int enumLength = Enum.GetNames(typeof(TileType)).Length;
+
+        int mappedSamples = Mathf.FloorToInt(normalizedSample * enumLength);
+
+        mappedSamples = Mathf.Clamp(mappedSamples, 0, enumLength - 1);
+
+        return (TileType)mappedSamples;
     }
 
     public static void Validate(Action callback, params UnityEngine.Object[] newObjects)

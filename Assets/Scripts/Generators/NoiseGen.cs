@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,9 +6,6 @@ using SimplexNoise;
 
 public class NoiseGen : MonoBehaviour
 {
-    public bool useRandomOffset = false;
-    public bool logElapsedTime = false;
-
     // Variables
     [Header("Perlin")]
     public float scale = 20f;
@@ -24,12 +22,22 @@ public class NoiseGen : MonoBehaviour
     public float persistence = 0.5f;
     public float lacunarity = 2f;
 
+    [Header("Options")]
+    public bool useRandomOffset = false;
+    public bool logElapsedTime = false;
+
+    // References
+    private TileHandler tileHandler;
+
     void Start()
     {
+        // Cache
+        tileHandler = GetComponent<TileHandler>();
+
         if (useRandomOffset)
         {
-            float x = Random.Range(-9999, 9999);
-            float y = Random.Range(-9999, 9999);
+            float x = UnityEngine.Random.Range(-9999, 9999);
+            float y = UnityEngine.Random.Range(-9999, 9999);
 
             offset = new(x, y);
             simplexOffset = new(x, y);
@@ -47,7 +55,9 @@ public class NoiseGen : MonoBehaviour
         float minSample = 0f;
         float maxSample = 0f;
 
-        var stopwatch = Glob.StartStopWatch();
+        tileHandler.isGenerating = true;
+
+        var stopwatch = Glob.StartStopWatch(); // Put this before any calculations
 
         if (useSimplexNoise)
         {
@@ -77,7 +87,17 @@ public class NoiseGen : MonoBehaviour
                     float xCoord = (float)x / gridWidth * scale + offset.x;
                     float yCoord = (float)y / gridHeight * scale + offset.y;
 
-                    sample = Mathf.PerlinNoise(xCoord, yCoord);
+                    sample = Mathf.PerlinNoise(xCoord, yCoord); // ! Return value might be slightly below 0 and slightly above 1
+
+                    if (sample < 0)
+                    {
+                        sample = 0;
+                    }
+
+                    if (sample > 1)
+                    {
+                        sample = 1;
+                    }
                 }
 
                 // Set the first sample for min and max, making sure they aren't 0
@@ -108,7 +128,7 @@ public class NoiseGen : MonoBehaviour
         {
             for (int y = 0; y < gridHeight; y++)
             {
-                tileData[x, y] = Glob.GetTileFormSample(sampleData[x, y], minSample, maxSample);
+                tileData[x, y] = Glob.GetTileFromSample(sampleData[x, y], minSample, maxSample);
             }
         }
 
@@ -117,6 +137,8 @@ public class NoiseGen : MonoBehaviour
         {
             Debug.Log(Glob.FormatMilliseconds(Glob.StopStopWatch(stopwatch)));
         }
+
+        tileHandler.isGenerating = false;
 
         return tileData;
     }

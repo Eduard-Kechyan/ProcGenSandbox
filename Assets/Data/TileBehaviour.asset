@@ -13,134 +13,80 @@ MonoBehaviour:
   m_Name: TileBehaviour
   m_EditorClassIdentifier: 
   ruleTiles:
-  - name: Grass
-    tile: {fileID: 11400000, guid: f094175ebeb48a845bb041d35b7411e0, type: 2}
+  - name: MountainTop
+    tile: {fileID: 11400000, guid: f82b32e382d0247498a0b0511886a6ca, type: 2}
     tileType: 0
     canBeNextToItself: 1
-    nextSelfChance: 40
+    nextSelfChance: 100
     cumulativeChance: 60
-    nextTiles:
-    - surroundingTiles: 1
-      chance: 15
-    - surroundingTiles: 2
-      chance: 10
-    - surroundingTiles: 3
-      chance: 5
-    - surroundingTiles: 4
-      chance: 10
-    - surroundingTiles: 8
-      chance: 5
-    - surroundingTiles: 11
-      chance: 15
-  - name: GrassFlowers
-    tile: {fileID: 11400000, guid: 7983458306129c649a5d1c27e19d72ab, type: 2}
+    nextTiles: []
+  - name: Mountain
+    tile: {fileID: 11400000, guid: 057ce31851d9184499796597ab8ab3ad, type: 2}
     tileType: 1
     canBeNextToItself: 1
-    nextSelfChance: 40
+    nextSelfChance: 100
     cumulativeChance: 60
-    nextTiles:
-    - surroundingTiles: 0
-      chance: 35
-    - surroundingTiles: 2
-      chance: 15
-    - surroundingTiles: 3
-      chance: 10
-  - name: GrassBush
-    tile: {fileID: 11400000, guid: c42060c544c1f1f458670c1450929c45, type: 2}
+    nextTiles: []
+  - name: MountainFoot
+    tile: {fileID: 11400000, guid: b16e901be35dc9342bea2ee168eb6efc, type: 2}
     tileType: 2
     canBeNextToItself: 1
-    nextSelfChance: 20
+    nextSelfChance: 100
     cumulativeChance: 80
-    nextTiles:
-    - surroundingTiles: 0
-      chance: 40
-    - surroundingTiles: 1
-      chance: 25
-    - surroundingTiles: 3
-      chance: 15
+    nextTiles: []
   - name: GrassRock
     tile: {fileID: 11400000, guid: f584c322072fb25439b06755ac1a9dec, type: 2}
     tileType: 3
-    canBeNextToItself: 0
-    nextSelfChance: 0
-    cumulativeChance: 100
-    nextTiles:
-    - surroundingTiles: 0
-      chance: 60
-    - surroundingTiles: 2
-      chance: 15
-    - surroundingTiles: 1
-      chance: 25
-  - name: Desert
-    tile: {fileID: 11400000, guid: ae482e7b8442b5e48906786cdfb76231, type: 2}
+    canBeNextToItself: 1
+    nextSelfChance: 100
+    cumulativeChance: 0
+    nextTiles: []
+  - name: GrassBush
+    tile: {fileID: 11400000, guid: c42060c544c1f1f458670c1450929c45, type: 2}
     tileType: 4
     canBeNextToItself: 1
-    nextSelfChance: 20
+    nextSelfChance: 100
     cumulativeChance: 80
-    nextTiles:
-    - surroundingTiles: 0
-      chance: 40
-    - surroundingTiles: 5
-      chance: 40
-  - name: WaterShallow
-    tile: {fileID: 11400000, guid: da9284d2002f8814d8cffcc75854e69a, type: 2}
+    nextTiles: []
+  - name: GrassFlowers
+    tile: {fileID: 11400000, guid: 7983458306129c649a5d1c27e19d72ab, type: 2}
     tileType: 5
     canBeNextToItself: 1
-    nextSelfChance: 20
+    nextSelfChance: 100
     cumulativeChance: 80
-    nextTiles:
-    - surroundingTiles: 4
-      chance: 45
-    - surroundingTiles: 6
-      chance: 35
-  - name: Water
-    tile: {fileID: 11400000, guid: ba38b6471683feb4a89edf86dc9260e6, type: 2}
+    nextTiles: []
+  - name: Grass
+    tile: {fileID: 11400000, guid: f094175ebeb48a845bb041d35b7411e0, type: 2}
     tileType: 6
     canBeNextToItself: 1
-    nextSelfChance: 50
+    nextSelfChance: 100
     cumulativeChance: 50
-    nextTiles:
-    - surroundingTiles: 5
-      chance: 20
-    - surroundingTiles: 7
-      chance: 30
-  - name: WaterDeep
-    tile: {fileID: 11400000, guid: 81ac398f431889e44a30c74a32a0f09f, type: 2}
+    nextTiles: []
+  - name: Desert
+    tile: {fileID: 11400000, guid: ae482e7b8442b5e48906786cdfb76231, type: 2}
     tileType: 7
     canBeNextToItself: 1
-    nextSelfChance: 30
+    nextSelfChance: 100
     cumulativeChance: 70
-    nextTiles:
-    - surroundingTiles: 6
-      chance: 70
-  - name: MountainFoot
-    tile: {fileID: 11400000, guid: b16e901be35dc9342bea2ee168eb6efc, type: 2}
+    nextTiles: []
+  - name: WaterShallow
+    tile: {fileID: 11400000, guid: da9284d2002f8814d8cffcc75854e69a, type: 2}
     tileType: 8
     canBeNextToItself: 1
-    nextSelfChance: 40
+    nextSelfChance: 100
     cumulativeChance: 60
-    nextTiles:
-    - surroundingTiles: 0
-      chance: 20
-    - surroundingTiles: 9
-      chance: 40
-  - name: Mountain
-    tile: {fileID: 11400000, guid: 057ce31851d9184499796597ab8ab3ad, type: 2}
+    nextTiles: []
+  - name: Water
+    tile: {fileID: 11400000, guid: ba38b6471683feb4a89edf86dc9260e6, type: 2}
     tileType: 9
     canBeNextToItself: 1
-    nextSelfChance: 45
+    nextSelfChance: 100
     cumulativeChance: 55
-    nextTiles:
-    - surroundingTiles: 8
-      chance: 35
-    - surroundingTiles: 10
-      chance: 20
-  - name: MountainTop
-    tile: {fileID: 11400000, guid: f82b32e382d0247498a0b0511886a6ca, type: 2}
+    nextTiles: []
+  - name: WaterDeep
+    tile: {fileID: 11400000, guid: 81ac398f431889e44a30c74a32a0f09f, type: 2}
     tileType: 10
     canBeNextToItself: 1
-    nextSelfChance: 70
+    nextSelfChance: 100
     cumulativeChance: 30
-    nextTiles:
-    - surroundingTiles: 9
-      chance: 30
+    nextTiles: []

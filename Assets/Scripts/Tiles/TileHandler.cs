@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.Tilemaps;
@@ -41,9 +40,12 @@ public class TileHandler : MonoBehaviour
     public int customGridWidth = 10;
     [Condition("useCustomGridSize", true)]
     public int customGridHeight = 10;
+    [ReadOnly]
+    public int tileCount = 0;
 
     [Header("Debug")]
     public bool generate = false;
+    public bool clear = false;
     public bool runInUpdate = false;
 
     private TileType[,] tileData;
@@ -52,6 +54,9 @@ public class TileHandler : MonoBehaviour
     private int gridHeight;
     private int halfGridWidth;
     private int halfGridHeight;
+
+    [HideInInspector]
+    public bool isGenerating = false;
 
     // References
     private NoiseGen noiseGen;
@@ -62,6 +67,7 @@ public class TileHandler : MonoBehaviour
     // UI
     private VisualElement root;
     private Button generateButton;
+    private Button clearButton;
 
     void Start()
     {
@@ -74,9 +80,11 @@ public class TileHandler : MonoBehaviour
         // UI
         root = tilesDoc.rootVisualElement;
         generateButton = root.Q<Button>("GenerateButton");
+        clearButton = root.Q<Button>("ClearButton");
 
         // UI Taps
         generateButton.clicked += () => GenerateAndSetTiles();
+        clearButton.clicked += () => ClearTiles();
     }
 
     void OnValidate()
@@ -91,26 +99,42 @@ public class TileHandler : MonoBehaviour
             }, this);
         }
 
+        if (clear)
+        {
+            clear = false;
+
+            Glob.Validate(() =>
+            {
+                ClearTiles();
+            }, this);
+        }
+
         if (useCustomGridSize)
         {
             MakeGridSizeEven();
-        }
 
-        if (generationMethod != GenType.PerlinNoise)
+            tileCount = customGridWidth * customGridHeight;
+        }
+        else
         {
-            runInUpdate = false;
+            tileCount = calculatedGridWidth * calculatedGridHeight;
         }
     }
 
     void Update()
     {
-        if (runInUpdate)
+        if (runInUpdate && !isGenerating)
         {
             GenerateAndSetTiles();
         }
     }
 
-    public void GenerateAndSetTiles()
+    void ClearTiles()
+    {
+        tilemap.ClearAllTiles();
+    }
+
+    void GenerateAndSetTiles()
     {
         CalculatedGridSize();
 
@@ -133,7 +157,7 @@ public class TileHandler : MonoBehaviour
                 tileData = diamondSquareGen.Generate(gridWidth, gridHeight, useVisualDelay);
                 break;
             case GenType.MidpointDisplacement:
-                tileData = waveFunctionCollapseGen.Generate(gridWidth, gridHeight, useVisualDelay);
+                tileData = midpointDisplacementGen.Generate(gridWidth, gridHeight, useVisualDelay);
                 break;
             case GenType.WaveFunctionCollapse:
                 tileData = waveFunctionCollapseGen.Generate(gridWidth, gridHeight, useVisualDelay);
@@ -145,13 +169,13 @@ public class TileHandler : MonoBehaviour
 
         if (tileData == null)
         {
-            Debug.LogWarning("\'tileData\' is null! Try using a different generation method!");
+            Debug.LogWarning("Generation method returned null! Try using a different generation method or fix the method!");
             return;
         }
 
-        // Set tilemap data
-        tilemap.ClearAllTiles();
+        ClearTiles();
 
+        // Set tilemap data
         for (int x = -halfGridWidth; x < halfGridWidth; x++)
         {
             for (int y = -halfGridHeight; y < halfGridHeight; y++)
@@ -165,6 +189,8 @@ public class TileHandler : MonoBehaviour
 
     void RandomGen()
     {
+        isGenerating = true;
+
         for (int x = 0; x < gridWidth; x++)
         {
             for (int y = 0; y < gridHeight; y++)
@@ -172,6 +198,8 @@ public class TileHandler : MonoBehaviour
                 tileData[x, y] = (TileType)UnityEngine.Random.Range(0, Enum.GetNames(typeof(TileType)).Length);
             }
         }
+
+        isGenerating = false;
     }
 
     Tile GetTileFromType(TileType tileType)

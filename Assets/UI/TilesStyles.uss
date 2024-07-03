@@ -35,3 +35,15 @@ VisualElement {
     background-color: rgb(45, 125, 77);
     scale: 0.8 0.8;
 }
+
+.red {
+    background-color: rgb(209, 48, 94);
+}
+
+.red:hover {
+    background-color: rgb(188, 40, 82);
+}
+
+.red:active {
+    background-color: rgb(173, 33, 73);
+}
