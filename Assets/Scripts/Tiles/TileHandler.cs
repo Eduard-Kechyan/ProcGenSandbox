@@ -14,6 +14,7 @@ public class TileHandler : MonoBehaviour
 {
     // Variables
     public TileBehaviour tileBehaviour;
+    public TileBehaviour tileBehaviourWFC;
     public UIDocument tilesDoc;
     public Tilemap tilemap;
     public Tile emptyTile;
@@ -85,6 +86,8 @@ public class TileHandler : MonoBehaviour
         // UI Taps
         generateButton.clicked += () => GenerateAndSetTiles();
         clearButton.clicked += () => ClearTiles();
+
+        CalculateGridSize();
     }
 
     void OnValidate()
@@ -112,13 +115,9 @@ public class TileHandler : MonoBehaviour
         if (useCustomGridSize)
         {
             MakeGridSizeEven();
+        }
 
-            tileCount = customGridWidth * customGridHeight;
-        }
-        else
-        {
-            tileCount = calculatedGridWidth * calculatedGridHeight;
-        }
+        CalculateGridSize();
     }
 
     void Update()
@@ -136,7 +135,7 @@ public class TileHandler : MonoBehaviour
 
     void GenerateAndSetTiles()
     {
-        CalculatedGridSize();
+        CalculateGridSize();
 
         // Setup tile data
         tileData = new TileType[gridWidth, gridHeight];
@@ -180,7 +179,7 @@ public class TileHandler : MonoBehaviour
         {
             for (int y = -halfGridHeight; y < halfGridHeight; y++)
             {
-                Tile foundTile = GetTileFromType(tileData[x + halfGridWidth, y + halfGridHeight]);
+                Tile foundTile = GetTileFromType(tileData[x + halfGridWidth, y + halfGridHeight], generationMethod == GenType.WaveFunctionCollapse ? tileBehaviourWFC : tileBehaviour);
 
                 tilemap.SetTile(new Vector3Int(x, y, 0), foundTile);
             }
@@ -202,13 +201,13 @@ public class TileHandler : MonoBehaviour
         isGenerating = false;
     }
 
-    Tile GetTileFromType(TileType tileType)
+    Tile GetTileFromType(TileType tileType, TileBehaviour selectedTileBehaviour)
     {
-        for (int i = 0; i < tileBehaviour.ruleTiles.Length; i++)
+        for (int i = 0; i < selectedTileBehaviour.ruleTiles.Length; i++)
         {
-            if (tileBehaviour.ruleTiles[i].tileType == tileType)
+            if (selectedTileBehaviour.ruleTiles[i].tileType == tileType)
             {
-                return tileBehaviour.ruleTiles[i].tile;
+                return selectedTileBehaviour.ruleTiles[i].tile;
             }
         }
 
@@ -228,7 +227,7 @@ public class TileHandler : MonoBehaviour
         }
     }
 
-    void CalculatedGridSize()
+    void CalculateGridSize()
     {
         if (useCustomGridSize)
         {
@@ -272,6 +271,15 @@ public class TileHandler : MonoBehaviour
 
         halfGridWidth = gridWidth / 2;
         halfGridHeight = gridHeight / 2;
+
+        if (useCustomGridSize)
+        {
+            tileCount = customGridWidth * customGridHeight;
+        }
+        else
+        {
+            tileCount = calculatedGridWidth * calculatedGridHeight;
+        }
     }
 }
 
@@ -289,13 +297,13 @@ public class TileData
     [Condition("canBeNextToItself", true, true)]
     [ReadOnly]
     public int cumulativeChance = 0;
-    public TileNext[] nextTiles;
+    public TileNeighbor[] neighboringTiles;
 }
 
 [Serializable]
-public class TileNext
+public class TileNeighbor
 {
-    public TileType surroundingTiles;
+    public TileType tileType;
     public int chance;
 }
 

@@ -353,6 +353,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tileBehaviour: {fileID: 11400000, guid: ac1b1b1b36289834a8ae1ec565cac397, type: 2}
+  tileBehaviourWFC: {fileID: 11400000, guid: ca19da8b09ac9274c98d1cc53f620296, type: 2}
   tilesDoc: {fileID: 173144621}
   tilemap: {fileID: 212595438}
   emptyTile: {fileID: 11400000, guid: c96390ccd61acfb46a12a0c46dde7a41, type: 2}
@@ -360,16 +361,16 @@ MonoBehaviour:
   useVisualDelay: 0
   visualDelay: 0.3
   newPathBranchChance: 20
-  generationMethod: 1
-  useCustomGridSize: 0
-  calculatedGridWidth: 60
-  calculatedGridHeight: 34
-  customGridWidth: 10
-  customGridHeight: 10
-  tileCount: 2040
+  generationMethod: 6
+  useCustomGridSize: 1
+  calculatedGridWidth: 40
+  calculatedGridHeight: 30
+  customGridWidth: 4
+  customGridHeight: 4
+  tileCount: 16
   generate: 0
   clear: 0
-  runInUpdate: 1
+  runInUpdate: 0
   isGenerating: 0
 --- !u!114 &516506285
 MonoBehaviour:

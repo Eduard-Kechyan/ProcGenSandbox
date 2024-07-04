@@ -5,6 +5,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "TileBehaviour", menuName = "TileBehaviour")]
 public class TileBehaviour : ScriptableObject
 {
+    public bool logWarnings = false;
     public TileData[] ruleTiles;
 
     void OnValidate()
@@ -17,12 +18,12 @@ public class TileBehaviour : ScriptableObject
 
             int cumulativeChance = 0;
 
-            if (ruleTiles[i].nextTiles != null && ruleTiles[i].nextTiles.Length > 0)
+            if (ruleTiles[i].neighboringTiles != null && ruleTiles[i].neighboringTiles.Length > 0)
             {
 
-                for (int j = 0; j < ruleTiles[i].nextTiles.Length; j++)
+                for (int j = 0; j < ruleTiles[i].neighboringTiles.Length; j++)
                 {
-                    cumulativeChance += ruleTiles[i].nextTiles[j].chance;
+                    cumulativeChance += ruleTiles[i].neighboringTiles[j].chance;
                 }
             }
 
@@ -32,7 +33,10 @@ public class TileBehaviour : ScriptableObject
 
                 if (nextSelfChance < 0)
                 {
-                    Debug.LogWarning(name + "'s next self chance is too low!");
+                    if (logWarnings)
+                    {
+                        Debug.LogWarning(name + "'s next self chance is too low!");
+                    }
                 }
                 else
                 {
@@ -47,7 +51,10 @@ public class TileBehaviour : ScriptableObject
                 {
                     ruleTiles[i].cumulativeChance = cumulativeChance;
 
-                    Debug.LogWarning(name + "'s cumulative chance isn't 100!");
+                    if (logWarnings)
+                    {
+                        Debug.LogWarning(name + "'s cumulative chance isn't 100!");
+                    }
                 }
             }
         }

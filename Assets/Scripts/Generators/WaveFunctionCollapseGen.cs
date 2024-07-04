@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,9 +6,11 @@ using UnityEngine;
 public class WaveFunctionCollapseGen : MonoBehaviour
 {
     // Variables
-
     [Header("Options")]
     public bool logElapsedTime = false;
+
+    private List<TileType> allTiles;
+    private GridCell[,] grid;
 
     // References
     private TileHandler tileHandler;
@@ -16,20 +19,167 @@ public class WaveFunctionCollapseGen : MonoBehaviour
     {
         // Cache
         tileHandler = GetComponent<TileHandler>();
+
+        InitializeTileTypes();
+    }
+
+    // Map all tiles types to a list
+    // Needs to be run only once
+    void InitializeTileTypes()
+    {
+        TileType[] allTimesArray = (TileType[])Enum.GetValues(typeof(TileType));
+
+        allTiles = new List<TileType>(allTimesArray);
     }
 
     public TileType[,] Generate(int gridWidth, int gridHeight, bool useDelay)
     {
-        tileHandler.isGenerating = true;
+        // Initialize generation
+        TileType[,] tileData = new TileType[gridWidth, gridHeight];
+        grid = InitializeGrid(gridWidth, gridHeight);
 
+        // ! Generation started
+        tileHandler.isGenerating = true;
         var stopwatch = Glob.StartStopWatch();
 
-        Debug.LogWarning("WIP");
+        // Generating data
+        //  GenerateTileData(gridWidth, gridHeight);
 
-        Debug.Log(Glob.FormatMilliseconds(Glob.StopStopWatch(stopwatch)));
+        // Set tile data
+        for (int x = 0; x < gridWidth; x++)
+        {
+            for (int y = 0; y < gridHeight; y++)
+            {
+                tileData[x, y] = grid[x, y].possibleTiles[0];
+            }
+        }
 
+        // ! Generation finished
+        if (logElapsedTime)
+        {
+            Debug.Log(Glob.FormatMilliseconds(Glob.StopStopWatch(stopwatch)));
+        }
         tileHandler.isGenerating = false;
 
-        return null;
+        // Return the calculated tiles
+        return tileData;
+    }
+
+    // Initialize a grid with all possible tile types in each cell
+    GridCell[,] InitializeGrid(int width, int height)
+    {
+        GridCell[,] grid = new GridCell[width, height];
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                grid[x, y] = new GridCell(allTiles);
+
+                Debug.Log(grid[x, y].possibleTiles);
+            }
+        }
+
+        return grid;
+    }
+
+    void GenerateTileData(int width, int height)
+    {
+        while (true)
+        {
+            int minOptions = int.MaxValue;
+            int collapseX = -1;
+            int collapseY = -1;
+
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    if (grid[x, y].possibleTiles.Count > 1 && grid[x, y].possibleTiles.Count < minOptions)
+                    {
+                        minOptions = grid[x, y].possibleTiles.Count;
+
+                        collapseX = x;
+                        collapseY = y;
+                    }
+                }
+            }
+
+            if (collapseX == -1 || collapseY == -1)
+            {
+                break;
+            }
+
+            CollapseCell(collapseX, collapseY);
+        }
+    }
+
+    void CollapseCell(int x, int y)
+    {
+        GridCell cell = grid[x, y];
+
+        TileType chosenTile = cell.possibleTiles[UnityEngine.Random.Range(0, cell.possibleTiles.Count)];
+
+        cell.possibleTiles = new List<TileType> { chosenTile };
+
+        // Right
+        if (x < grid.GetLength(0) - 1)
+        {
+            grid[x + 1, y].possibleTiles = ApplyRulesToNeighbor(chosenTile);
+        }
+
+        // Left
+        if (x > 0)
+        {
+            grid[x - 1, y].possibleTiles = ApplyRulesToNeighbor(chosenTile);
+        }
+
+        // Top
+        if (y < grid.GetLength(1) - 1)
+        {
+            grid[x, y + 1].possibleTiles = ApplyRulesToNeighbor(chosenTile);
+        }
+
+        // Bottom
+        if (y > 0)
+        {
+            grid[x, y - 1].possibleTiles = ApplyRulesToNeighbor(chosenTile);
+        }
+    }
+
+    List<TileType> ApplyRulesToNeighbor(TileType chosenTile)
+    {
+        List<TileType> filteredTileTypes = new List<TileType>();
+
+        for (int i = 0; i < tileHandler.tileBehaviourWFC.ruleTiles.Length; i++)
+        {
+            if (tileHandler.tileBehaviourWFC.ruleTiles[i].tileType == chosenTile)
+            {
+                foreach (TileNeighbor tileNeighbor in tileHandler.tileBehaviourWFC.ruleTiles[i].neighboringTiles)
+                {
+                    filteredTileTypes.Add(tileNeighbor.tileType);
+                }
+
+                if (tileHandler.tileBehaviourWFC.ruleTiles[i].canBeNextToItself)
+                {
+                    filteredTileTypes.Add(chosenTile);
+                }
+
+                break;
+            }
+        }
+
+        return filteredTileTypes;
+    }
+}
+
+[Serializable]
+public class GridCell
+{
+    public List<TileType> possibleTiles;
+
+    public GridCell(List<TileType> newPossibleTiles)
+    {
+        possibleTiles = new List<TileType>(newPossibleTiles);
     }
 }

@@ -13,6 +13,7 @@ public class Glob : MonoBehaviour
 {
     public static Glob Instance;
 
+    // TODO - Fix this function 
     public static string FormatMilliseconds(long milliSeconds)
     {
         long totalSeconds = milliSeconds / 1000;
