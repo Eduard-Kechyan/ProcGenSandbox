@@ -6,11 +6,16 @@ using UnityEngine;
 public class WaveFunctionCollapseGen : MonoBehaviour
 {
     // Variables
+    public int loopThreshold = 1000;
+
+
     [Header("Options")]
     public bool logElapsedTime = false;
 
     private List<TileType> allTiles;
     private GridCell[,] grid;
+
+    private int innerThreshold;
 
     // References
     private TileHandler tileHandler;
@@ -43,7 +48,7 @@ public class WaveFunctionCollapseGen : MonoBehaviour
         var stopwatch = Glob.StartStopWatch();
 
         // Generating data
-        //  GenerateTileData(gridWidth, gridHeight);
+        GenerateTileData(gridWidth, gridHeight);
 
         // Set tile data
         for (int x = 0; x < gridWidth; x++)
@@ -75,8 +80,6 @@ public class WaveFunctionCollapseGen : MonoBehaviour
             for (int y = 0; y < height; y++)
             {
                 grid[x, y] = new GridCell(allTiles);
-
-                Debug.Log(grid[x, y].possibleTiles);
             }
         }
 
@@ -85,7 +88,11 @@ public class WaveFunctionCollapseGen : MonoBehaviour
 
     void GenerateTileData(int width, int height)
     {
-        while (true)
+        innerThreshold = loopThreshold;
+
+        int count = 0;
+
+        while (innerThreshold > 0)
         {
             int minOptions = int.MaxValue;
             int collapseX = -1;
@@ -101,17 +108,26 @@ public class WaveFunctionCollapseGen : MonoBehaviour
 
                         collapseX = x;
                         collapseY = y;
+
+                        count++;
+
+                        break;
                     }
                 }
             }
 
+            innerThreshold--;
+
             if (collapseX == -1 || collapseY == -1)
             {
+                Debug.Log("Finished!");
                 break;
             }
 
             CollapseCell(collapseX, collapseY);
         }
+
+        Debug.Log(count);
     }
 
     void CollapseCell(int x, int y)
@@ -120,7 +136,7 @@ public class WaveFunctionCollapseGen : MonoBehaviour
 
         TileType chosenTile = cell.possibleTiles[UnityEngine.Random.Range(0, cell.possibleTiles.Count)];
 
-        cell.possibleTiles = new List<TileType> { chosenTile };
+        grid[x, y].possibleTiles = new List<TileType> { chosenTile };
 
         // Right
         if (x < grid.GetLength(0) - 1)
