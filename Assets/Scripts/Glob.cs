@@ -27,19 +27,6 @@ public class Glob : MonoBehaviour
         return "Generated tilemap in: " + formatedString;
     }
 
-    public static TileType GetTileFromSample(float sample, float min, float max)
-    {
-        float normalizedSample = (sample - min) / (max - min);
-
-        int enumLength = Enum.GetNames(typeof(TileType)).Length;
-
-        int mappedSamples = Mathf.FloorToInt(normalizedSample * enumLength);
-
-        mappedSamples = Mathf.Clamp(mappedSamples, 0, enumLength - 1);
-
-        return (TileType)mappedSamples;
-    }
-
     public static void Validate(Action callback, params UnityEngine.Object[] newObjects)
     {
         void NextUpdate()
@@ -67,7 +54,7 @@ public class Glob : MonoBehaviour
         EditorApplication.update += NextUpdate;
     }
 
-    // STOPWATCH //
+    //// STOPWATCH ////
 
     public static Stopwatch StartStopWatch()
     {

@@ -7,7 +7,7 @@ public class WorldMovement : MonoBehaviour
 {
     // Variables
     public float speed = 10f;
-    public TilemapManager tilemapManager;
+    public GenerationManager generationManager;
     public UIDocument tilesDoc;
 
     [HideInInspector]
@@ -37,7 +37,7 @@ public class WorldMovement : MonoBehaviour
 
     void Update()
     {
-        if (!tilemapManager.useUpdateForMovementChecking && tilemapManager.initialChunksGenerated)
+        if (!generationManager.useUpdateForMovementChecking && generationManager.initialChunksGenerated)
         {
             MoveWorld();
         }
@@ -51,7 +51,7 @@ public class WorldMovement : MonoBehaviour
 
             transform.Translate(-direction * speed * Time.deltaTime);
 
-            tilemapManager.WorldMoved(transform.position);
+            generationManager.OnWorldMoved(transform.position);
         }
         else
         {
@@ -63,6 +63,6 @@ public class WorldMovement : MonoBehaviour
     {
         transform.position = Vector3.zero;
 
-        tilemapManager.WorldMoved(Vector2.zero);
+        generationManager.OnWorldMoved(Vector2.zero);
     }
 }

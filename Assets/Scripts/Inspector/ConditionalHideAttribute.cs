@@ -18,7 +18,6 @@ public class ConditionAttribute : PropertyAttribute
     public bool InverseCondition1 = false;
     public bool InverseCondition2 = false;
 
-
     // Use this for initialization
     public ConditionAttribute(string FirstCondition)
     {
